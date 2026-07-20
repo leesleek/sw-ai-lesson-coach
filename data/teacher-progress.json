@@ -1,0 +1,17 @@
+{
+  "test-client": {
+    "clientId": "test-client",
+    "firstSeenAt": "2026-07-18T05:25:05.827Z",
+    "teacherName": "이경민",
+    "lessonTitle": "",
+    "subject": "",
+    "grade": "",
+    "lessonCount": "",
+    "activeStep": 0,
+    "approvedCount": 0,
+    "totalCount": 44,
+    "progressPercent": 0,
+    "completed": false,
+    "lastSeenAt": "2026-07-18T05:25:05.828Z"
+  }
+}

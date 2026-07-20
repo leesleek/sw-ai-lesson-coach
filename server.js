@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import OpenAI from "openai";
 import fs from "fs";

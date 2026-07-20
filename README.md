@@ -1,4 +1,4 @@
-# SW·AI 수업 설계 코치 v4.9 — Render Node 20 무료 배포판
+# SW·AI 수업 설계 코치 v5.0 — Render 실행 오류 수정판
 
 코드 수정은 완료되어 있다. 직접 해야 하는 작업은 네 가지뿐이다.
 
@@ -64,3 +64,12 @@ Render 기본 Node.js 24 환경의 npm 오류를 피하기 위해 Node.js 20.19.
 - `package.json`의 `engines`
 - `render.yaml`의 `NODE_VERSION`
 - 빌드 명령 `npm ci`
+
+
+## Render 실행 오류 수정
+
+Render는 환경변수를 직접 주입하므로 `dotenv`를 사용하지 않도록 수정하였다.
+
+- `server.js`의 `import "dotenv/config"` 제거
+- `package.json`의 `dotenv` 의존성 제거
+- Render의 `OPENAI_API_KEY`, `SUPABASE_URL` 등 환경변수는 그대로 사용

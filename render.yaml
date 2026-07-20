@@ -3,7 +3,7 @@ services:
     name: sw-ai-lesson-design-coach
     runtime: node
     plan: free
-    buildCommand: npm ci
+    buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true

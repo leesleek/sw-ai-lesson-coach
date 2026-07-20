@@ -1,4 +1,4 @@
-# SW·AI 수업 설계 코치 v4.8 — 무료 배포판
+# SW·AI 수업 설계 코치 v4.9 — Render Node 20 무료 배포판
 
 코드 수정은 완료되어 있다. 직접 해야 하는 작업은 네 가지뿐이다.
 
@@ -54,3 +54,13 @@ https://배포주소.onrender.com/api/health
   "supabaseConfigured": true
 }
 ```
+
+
+## Render 빌드 오류 수정
+
+Render 기본 Node.js 24 환경의 npm 오류를 피하기 위해 Node.js 20.19.5로 고정하였다.
+
+- `.node-version`
+- `package.json`의 `engines`
+- `render.yaml`의 `NODE_VERSION`
+- 빌드 명령 `npm ci`

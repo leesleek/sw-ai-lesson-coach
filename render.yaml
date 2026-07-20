@@ -3,13 +3,15 @@ services:
     name: sw-ai-lesson-design-coach
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 20.19.5
       - key: OPENAI_MODEL
         value: gpt-4.1-mini
       - key: OPENAI_API_KEY

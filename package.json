@@ -12,6 +12,7 @@
     "express": "^4.21.1",
     "openai": "^4.77.0",
     "@supabase/supabase-js": "^2.57.4"
+    "dotenv": "^16.6.1"
   },
   "engines": {
     "node": ">=20.19.5 <21",

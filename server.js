@@ -1,9 +1,11 @@
+import "dotenv/config";
 import express from "express";
 import OpenAI from "openai";
 import fs from "fs";
 import crypto from "crypto";
 import path from "path";
 import { createClient } from "@supabase/supabase-js";
+import ws from "ws";
 import { buildPrompt } from "./prompt.js";
 
 const app = express();
@@ -19,11 +21,14 @@ const USE_LOCAL_PROGRESS_FALLBACK =
 
 const supabase =
   SUPABASE_URL && SUPABASE_SECRET_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
+          ? createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
         auth: {
           persistSession: false,
           autoRefreshToken: false,
           detectSessionInUrl: false
+        },
+        realtime: {
+          transport: ws
         }
       })
     : null;

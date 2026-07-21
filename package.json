@@ -1,21 +1,21 @@
-{
-  "name": "sw-ai-lesson-design-coach",
-  "version": "2.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "check:deployment": "node scripts/check-deployment.mjs"
-  },
-  "dependencies": {
-    "express": "^4.21.1",
-    "openai": "^4.77.0",
-    "@supabase/supabase-js": "^2.57.4",
-    "dotenv": "^16.6.1"
-  },
-  "engines": {
-    "node": ">=20.19.5 <21",
-    "npm": ">=10 <11"
-  }
+﻿{
+    "name":  "sw-ai-lesson-design-coach",
+    "version":  "2.0.0",
+    "private":  true,
+    "type":  "module",
+    "scripts":  {
+                    "start":  "node server.js",
+                    "dev":  "node --watch server.js",
+                    "check:deployment":  "node scripts/check-deployment.mjs"
+                },
+    "dependencies":  {
+                         "express":  "^4.21.2",
+                         "openai":  "^5.0.0",
+                         "@supabase/supabase-js":  "^2.57.4",
+                         "dotenv":  "^16.6.1"
+                     },
+    "engines":  {
+                    "node":  "\u003e=20.19.5 \u003c21",
+                    "npm":  "\u003e=10 \u003c11"
+                }
 }

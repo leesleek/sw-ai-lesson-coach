@@ -5,3 +5,5 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+data/teacher-progress.json
+storage/teacher-progress.json

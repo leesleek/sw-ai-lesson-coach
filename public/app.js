@@ -41,7 +41,7 @@ function showInfo(text,title="안내"){ $("#info-title").textContent=title; $("#
 function showError(error){if(!error)return;$("#error-code").textContent=`${error.code||"ERROR"}${error.status?` · HTTP ${error.status}`:""}`;$("#error-message").textContent=msg(error.message||"알 수 없는 오류가 발생했습니다.");$("#error-guidance").textContent=error.guidance||"서버 설정을 확인해 주시기 바랍니다.";$("#error-dialog").showModal();}
 
 async function fetchJson(url,options){
- try{const r=await fetch(url,options);const d=await r.json().catch(()=>({}));if(!r.ok)throw{code:d?.error?.code||"HTTP_ERROR",status:r.status,message:d?.error?.message||`서버 요청에 실패했습니다. (${r.status})`,guidance:"서버가 실행 중인지 확인하고 다시 시도해 주시기 바랍니다."};return d;}
+ try{const r=await fetch(url,options);const d=await r.json().catch(()=>({}));if(!r.ok)throw{code:d?.error?.code||"HTTP_ERROR",status:r.status,message:d?.error?.message||`서버 요청에 실패했습니다. (${r.status})`,guidance:d?.error?.guidance||"서버가 실행 중인지 확인하고 다시 시도해 주시기 바랍니다."};return d;}
  catch(e){if(e?.code)throw e;throw{code:"NETWORK_ERROR",status:0,message:e?.message||"서버에 연결할 수 없습니다.",guidance:"npm start 실행 여부와 http://localhost:3000 주소를 확인해 주시기 바랍니다."};}
 }
 async function loadCase(subject){state.caseData=await fetchJson(`/api/case/${encodeURIComponent(subject)}`);}

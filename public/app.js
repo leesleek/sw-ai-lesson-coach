@@ -675,8 +675,11 @@ async function generateStudentWorksheet(){
  }
 }
 
+function currentWorksheetBody(){
+ return $("#worksheet-content")?.innerHTML||state.worksheetHtml||"";
+}
 function currentWorksheetHtml(){
- const content=$("#worksheet-content")?.innerHTML||state.worksheetHtml||"";
+ const content=currentWorksheetBody();
  const title=state.worksheet?.title||`${state.design?.meta?.title||"수업"} 학생 활동지`;
  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
  <style>
@@ -698,20 +701,14 @@ function currentWorksheetHtml(){
  </style></head><body>${content}</body></html>`;
 }
 
-function toWordDoc(html){
- return html
-   .replace("<html lang=\"ko\">", "<html lang=\"ko\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" xmlns=\"http://www.w3.org/TR/REC-html40\">")
-   .replace("<meta charset=\"utf-8\">", "<meta charset=\"utf-8\"><meta name=\"ProgId\" content=\"Word.Document\"><meta name=\"Generator\" content=\"Microsoft Word 15\"><meta name=\"Originator\" content=\"Microsoft Word 15\"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->");
-}
-
 function saveWorksheetAsWord(){
  if(!state.worksheet)return;
  saveWorksheetEdits();
- const blob=new Blob(["\ufeff",toWordDoc(currentWorksheetHtml())],{type:"application/msword;charset=utf-8"});
+ const blob=buildDocxBlob(htmlFragmentToDocxBody(currentWorksheetBody()));
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
  a.href=url;
- a.download=(state.worksheet.title||"학생_활동지").replace(/[\\/:*?"<>|]/g,"_")+".doc";
+ a.download=(state.worksheet.title||"학생_활동지").replace(/[\\/:*?"<>|]/g,"_")+".docx";
  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
  showToast("학생 활동지 Word 문서 저장을 시작했습니다.");
 }
@@ -755,10 +752,157 @@ on("#worksheet-content","input",()=>{
 });
 $("#worksheet-dialog")?.addEventListener("close",saveWorksheetEdits);
 
+// ---- minimal .docx (OOXML) generator: builds a real Word file, not an HTML file renamed to .doc ----
+const DOCX_CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function docxCrc32(bytes){let c=0xffffffff;for(let i=0;i<bytes.length;i++)c=DOCX_CRC_TABLE[(c^bytes[i])&0xff]^(c>>>8);return (c^0xffffffff)>>>0;}
+function docxU16(n){return [n&0xff,(n>>8)&0xff];}
+function docxU32(n){return [n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff];}
+function docxBuildZip(files){
+ const chunks=[],centralRecords=[];let offset=0;
+ for(const f of files){
+   const nameBytes=Array.from(new TextEncoder().encode(f.name));
+   const data=f.data;const crc=docxCrc32(data);
+   const localHeader=Uint8Array.from([...docxU32(0x04034b50),...docxU16(20),...docxU16(0),...docxU16(0),...docxU16(0),...docxU16(0),...docxU32(crc),...docxU32(data.length),...docxU32(data.length),...docxU16(nameBytes.length),...docxU16(0),...nameBytes]);
+   chunks.push(localHeader,data);
+   centralRecords.push({nameBytes,crc,size:data.length,offset});
+   offset+=localHeader.length+data.length;
+ }
+ const centralDirStart=offset;
+ const centralChunks=centralRecords.map(r=>Uint8Array.from([...docxU32(0x02014b50),...docxU16(20),...docxU16(20),...docxU16(0),...docxU16(0),...docxU16(0),...docxU16(0),...docxU32(r.crc),...docxU32(r.size),...docxU32(r.size),...docxU16(r.nameBytes.length),...docxU16(0),...docxU16(0),...docxU16(0),...docxU16(0),...docxU32(0),...docxU32(r.offset),...r.nameBytes]));
+ const centralDirBytes=centralChunks.reduce((a,c)=>a+c.length,0);
+ const eocd=Uint8Array.from([...docxU32(0x06054b50),...docxU16(0),...docxU16(0),...docxU16(files.length),...docxU16(files.length),...docxU32(centralDirBytes),...docxU32(centralDirStart),...docxU16(0)]);
+ const total=[...chunks,...centralChunks,eocd];
+ const totalLen=total.reduce((a,c)=>a+c.length,0);
+ const out=new Uint8Array(totalLen);let p=0;
+ for(const c of total){out.set(c,p);p+=c.length;}
+ return out;
+}
+function docxTextPart(name,xml){return {name,data:new TextEncoder().encode(xml)};}
+function docxRun(text,opts={}){
+ const props=[];
+ if(opts.bold)props.push("<w:b/>");
+ if(opts.size)props.push(`<w:sz w:val="${opts.size}"/>`);
+ const rPr=props.length?`<w:rPr>${props.join("")}</w:rPr>`:"";
+ return `<w:r>${rPr}<w:t xml:space="preserve">${escapeHtml(text)}</w:t></w:r>`;
+}
+function docxParagraph(runsOrText,opts={}){
+ const runsXml=Array.isArray(runsOrText)?runsOrText.map(r=>docxRun(r.text,r)).join(""):(runsOrText?docxRun(runsOrText,opts):"");
+ const spacing=opts.spacingAfter!=null?`<w:spacing w:after="${opts.spacingAfter}"/>`:"";
+ const pPr=spacing?`<w:pPr>${spacing}</w:pPr>`:"";
+ return `<w:p>${pPr}${runsXml}</w:p>`;
+}
+function docxHeading(text,level=1){
+ const size=level===1?32:26;
+ return `<w:p><w:pPr><w:spacing w:before="240" w:after="120"/></w:pPr>${docxRun(text,{bold:true,size})}</w:p>`;
+}
+function docxBlankLine(){
+ return `<w:p><w:pPr><w:spacing w:after="200"/><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="999999"/></w:pBdr></w:pPr></w:p>`;
+}
+function docxTableCell(text){return `<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/></w:tcPr><w:p>${text?docxRun(text):""}</w:p></w:tc>`;}
+function docxTableRow(cells){return `<w:tr>${cells.map(docxTableCell).join("")}</w:tr>`;}
+function docxTable(rows){
+ return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="auto"/><w:left w:val="single" w:sz="4" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:color="auto"/><w:right w:val="single" w:sz="4" w:color="auto"/><w:insideH w:val="single" w:sz="4" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:color="auto"/></w:tblBorders></w:tblPr>${rows.map(docxTableRow).join("")}</w:tbl>`;
+}
+function docxTableXml(tableEl){
+ const rows=[...tableEl.querySelectorAll("tr")].map(tr=>[...tr.children].map(cell=>cell.textContent.trim()));
+ return rows.length?docxTable(rows):"";
+}
+function docxHasDirectInlineContent(el){
+ const blockTags=["p","div","section","article","header","table","dl","ul","ol","h1","h2","h3"];
+ if([...el.children].some(c=>blockTags.includes(c.tagName.toLowerCase())))return false;
+ const hasText=[...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim());
+ const hasInlineTag=[...el.children].some(c=>["br","b","strong","span"].includes(c.tagName.toLowerCase()));
+ return hasText||hasInlineTag;
+}
+function docxCollectLines(el){
+ const lines=[[]];
+ (function walk(node,bold){
+   node.childNodes.forEach(child=>{
+     if(child.nodeType===3){
+       const t=child.textContent;
+       if(t.trim())lines[lines.length-1].push({text:t,bold});
+     }else if(child.nodeType===1){
+       const tag=child.tagName.toLowerCase();
+       if(tag==="br"){lines.push([]);return;}
+       if(tag==="b"||tag==="strong"){walk(child,true);return;}
+       walk(child,bold);
+     }
+   });
+ })(el,false);
+ return lines.filter(line=>line.length);
+}
+function docxLinesToParagraphs(lines){return lines.map(line=>docxParagraph(line)).join("");}
+function docxBlockToXml(el){
+ let out="";
+ el.childNodes.forEach(child=>{
+   if(child.nodeType===3){
+     const t=child.textContent.trim();
+     if(t)out+=docxParagraph(t);
+     return;
+   }
+   if(child.nodeType!==1)return;
+   const tag=child.tagName.toLowerCase();
+   const cls=child.classList;
+
+   if(tag==="table"){out+=docxTableXml(child);return;}
+   if(tag==="h1"){out+=docxHeading(child.textContent.trim(),1);return;}
+   if(tag==="h2"||tag==="h3"){out+=docxHeading(child.textContent.trim(),2);return;}
+   if(tag==="br")return;
+
+   if(cls.contains("student-writing-line")){out+=docxBlankLine();return;}
+   if(cls.contains("student-prompt")){
+     const label=child.querySelector("strong")?.textContent.trim()||child.textContent.trim();
+     const blanks=child.querySelectorAll(".student-writing-line").length||2;
+     out+=docxParagraph(label,{bold:true,spacingAfter:60});
+     for(let i=0;i<blanks;i++)out+=docxBlankLine();
+     return;
+   }
+   if(cls.contains("student-info-row")){
+     const labels=[...child.querySelectorAll("strong")].map(s=>s.textContent.trim());
+     out+=docxParagraph(labels.map(l=>`${l}: ______________`).join("    "));
+     return;
+   }
+
+   if(tag==="dt"||tag==="strong"||tag==="b"){out+=docxParagraph(child.textContent.trim(),{bold:true});return;}
+   if(tag==="dd"||tag==="p"){out+=docxParagraph(child.textContent.trim());return;}
+
+   if(docxHasDirectInlineContent(child)){out+=docxLinesToParagraphs(docxCollectLines(child));return;}
+
+   out+=docxBlockToXml(child);
+ });
+ return out;
+}
+function htmlFragmentToDocxBody(htmlString){
+ const container=document.createElement("div");
+ container.innerHTML=htmlString;
+ return docxBlockToXml(container);
+}
+const DOCX_CONTENT_TYPES=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+const DOCX_ROOT_RELS=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+function buildDocxBlob(bodyXml){
+ const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${bodyXml}<w:sectPr/></w:body></w:document>`;
+ const zipBytes=docxBuildZip([
+   docxTextPart("[Content_Types].xml",DOCX_CONTENT_TYPES),
+   docxTextPart("_rels/.rels",DOCX_ROOT_RELS),
+   docxTextPart("word/document.xml",documentXml)
+ ]);
+ return new Blob([zipBytes],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+
 function escapeHtml(text=""){return String(text).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
-function buildExportHtml(){const m=state.design.meta;const sections=state.design.steps.map(step=>`<section><h2>${step.id}. ${escapeHtml(step.name)}</h2>${step.id===2&&state.design.fiveStage?`<table><thead><tr><th>문제해결 5단계</th><th>단계별 학생 활동</th><th>중점 의사소통 요소</th><th>학생 문장 틀</th><th>단계별 교사 발문</th></tr></thead><tbody>${state.design.fiveStage.map(r=>`<tr><td>${escapeHtml(r.stage)}</td><td>${escapeHtml(r.problemActivity)}</td><td>${escapeHtml(r.focus||r.communicationActivity)}</td><td>${escapeHtml(r.sentenceFrame)}</td><td>${escapeHtml(r.teacherQuestion)}</td></tr>`).join("")}</tbody></table>`:`<dl>${step.items.map(i=>`<dt>${escapeHtml(i.label)}</dt><dd>${escapeHtml(i.content)}</dd>`).join("")}</dl>`}</section>`).join("");return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(m.title)}</title><style>body{font-family:"Malgun Gothic",Arial,sans-serif;color:#1c3348;line-height:1.65;margin:38px}h1{color:#123f71;border-bottom:3px solid #123f71;padding-bottom:12px}h2{color:#0f6f78;margin-top:30px;border-left:6px solid #0f8f93;padding-left:10px}.meta{background:#f3f7f9;padding:14px 18px;border-radius:10px}dt{font-weight:700;margin-top:14px;color:#123f71}dd{margin:4px 0 0}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #adbcc7;padding:7px;vertical-align:top}th{background:#edf6fd}@page{size:A4;margin:15mm}</style></head><body><h1>문제해결력과 의사소통능력 강화를 위한 SW·AI 수업 설계안</h1><div class="meta"><b>교사:</b> ${escapeHtml(teacherName())}<br><b>교과:</b> ${escapeHtml(m.subject)} · <b>학년:</b> ${escapeHtml(m.grade)} · <b>차시:</b> ${escapeHtml(m.lessonCount)}<br><b>주제:</b> ${escapeHtml(m.title)}</div>${sections}</body></html>`;}
+function buildExportBody(){const m=state.design.meta;const sections=state.design.steps.map(step=>`<section><h2>${step.id}. ${escapeHtml(step.name)}</h2>${step.id===2&&state.design.fiveStage?`<table><thead><tr><th>문제해결 5단계</th><th>단계별 학생 활동</th><th>중점 의사소통 요소</th><th>학생 문장 틀</th><th>단계별 교사 발문</th></tr></thead><tbody>${state.design.fiveStage.map(r=>`<tr><td>${escapeHtml(r.stage)}</td><td>${escapeHtml(r.problemActivity)}</td><td>${escapeHtml(r.focus||r.communicationActivity)}</td><td>${escapeHtml(r.sentenceFrame)}</td><td>${escapeHtml(r.teacherQuestion)}</td></tr>`).join("")}</tbody></table>`:`<dl>${step.items.map(i=>`<dt>${escapeHtml(i.label)}</dt><dd>${escapeHtml(i.content)}</dd>`).join("")}</dl>`}</section>`).join("");return `<h1>문제해결력과 의사소통능력 강화를 위한 SW·AI 수업 설계안</h1><div class="meta"><b>교사:</b> ${escapeHtml(teacherName())}<br><b>교과:</b> ${escapeHtml(m.subject)} · <b>학년:</b> ${escapeHtml(m.grade)} · <b>차시:</b> ${escapeHtml(m.lessonCount)}<br><b>주제:</b> ${escapeHtml(m.title)}</div>${sections}`;}
+function buildExportHtml(){const m=state.design.meta;return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(m.title)}</title><style>body{font-family:"Malgun Gothic",Arial,sans-serif;color:#1c3348;line-height:1.65;margin:38px}h1{color:#123f71;border-bottom:3px solid #123f71;padding-bottom:12px}h2{color:#0f6f78;margin-top:30px;border-left:6px solid #0f8f93;padding-left:10px}.meta{background:#f3f7f9;padding:14px 18px;border-radius:10px}dt{font-weight:700;margin-top:14px;color:#123f71}dd{margin:4px 0 0}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #adbcc7;padding:7px;vertical-align:top}th{background:#edf6fd}@page{size:A4;margin:15mm}</style></head><body>${buildExportBody()}</body></html>`;}
 function saveAsPdf(){const win=window.open("","_blank");if(!win){showError({code:"POPUP_BLOCKED",message:"PDF 저장 창을 열 수 없습니다.",guidance:"브라우저의 팝업 차단을 해제해 주시기 바랍니다."});return;}win.document.write(buildExportHtml());win.document.close();win.focus();setTimeout(()=>win.print(),400);}
-function saveAsWord(){const blob=new Blob(["\ufeff",toWordDoc(buildExportHtml())],{type:"application/msword;charset=utf-8"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=(state.design.meta.title||"SWAI_수업설계안").replace(/[\\/:*?"<>|]/g,"_")+".doc";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);showToast("Word 문서 저장을 시작했습니다.");}
+function saveAsWord(){const blob=buildDocxBlob(htmlFragmentToDocxBody(buildExportBody()));const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=(state.design.meta.title||"SWAI_수업설계안").replace(/[\\/:*?"<>|]/g,"_")+".docx";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);showToast("Word 문서 저장을 시작했습니다.");}
 
 on("#overview-button","click",()=>{if(!state.design)return;$("#overview-content").innerHTML=state.design.steps.map(s=>`<section class="overview-step"><h3>${s.id}. ${s.name}</h3><ul>${s.items.map(i=>`<li><strong>${i.label}</strong>: ${i.content}</li>`).join("")}</ul></section>`).join("");$("#overview-dialog").showModal()});
 on("#save-pdf","click",saveAsPdf);

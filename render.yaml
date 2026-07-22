@@ -3,7 +3,7 @@ services:
     name: sw-ai-lesson-design-coach
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --no-frozen-lockfile
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true

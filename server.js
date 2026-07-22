@@ -1,5 +1,4 @@
-import "dotenv/config";
-import express from "express";
+﻿import express from "express";
 import OpenAI from "openai";
 import fs from "fs";
 import crypto from "crypto";
@@ -64,8 +63,8 @@ function requireProgressStore(res) {
   res.status(503).json({
     error: {
       code: "PROGRESS_STORE_NOT_CONFIGURED",
-      message: "Supabase 진행 상황 저장소가 설정되지 않았습니다.",
-      guidance: "SUPABASE_URL과 SUPABASE_SECRET_KEY 환경변수를 등록해 주시기 바랍니다."
+      message: "Supabase 吏꾪뻾 ?곹솴 ??μ냼媛 ?ㅼ젙?섏? ?딆븯?듬땲??",
+      guidance: "SUPABASE_URL怨?SUPABASE_SECRET_KEY ?섍꼍蹂?섎? ?깅줉??二쇱떆湲?諛붾엻?덈떎."
     }
   });
   return false;
@@ -116,30 +115,30 @@ function apiErrorPayload(error, defaultCode = "OPENAI_ERROR") {
   const status = error?.status || error?.response?.status || 500;
   const message = error?.error?.message || error?.message || String(error);
   let code = error?.code || error?.error?.code || defaultCode;
-  let guidance = "PowerShell의 서버 오류 기록을 확인해 주시기 바랍니다.";
+  let guidance = "PowerShell???쒕쾭 ?ㅻ쪟 湲곕줉???뺤씤??二쇱떆湲?諛붾엻?덈떎.";
   if (status === 401 || /api key|authentication|incorrect/i.test(message)) {
     code = "INVALID_API_KEY";
-    guidance = ".env의 OPENAI_API_KEY를 확인하고 서버를 다시 시작해 주시기 바랍니다.";
+    guidance = ".env??OPENAI_API_KEY瑜??뺤씤?섍퀬 ?쒕쾭瑜??ㅼ떆 ?쒖옉??二쇱떆湲?諛붾엻?덈떎.";
   } else if (status === 429 || /quota|billing|rate limit/i.test(message)) {
     code = "QUOTA_OR_RATE_LIMIT";
-    guidance = "OpenAI API 결제·사용 한도 또는 호출 제한을 확인해 주시기 바랍니다.";
+    guidance = "OpenAI API 寃곗젣쨌?ъ슜 ?쒕룄 ?먮뒗 ?몄텧 ?쒗븳???뺤씤??二쇱떆湲?諛붾엻?덈떎.";
   } else if (status === 404 || /model/i.test(message)) {
     code = "MODEL_NOT_AVAILABLE";
-    guidance = ".env의 OPENAI_MODEL을 계정에서 사용 가능한 모델명으로 수정해 주시기 바랍니다.";
+    guidance = ".env??OPENAI_MODEL??怨꾩젙?먯꽌 ?ъ슜 媛?ν븳 紐⑤뜽紐낆쑝濡??섏젙??二쇱떆湲?諛붾엻?덈떎.";
   } else if (/fetch|network|timeout|ENOTFOUND|ECONN/i.test(message)) {
     code = "NETWORK_ERROR";
-    guidance = "인터넷 연결, 방화벽, 프록시와 api.openai.com 접속 가능 여부를 확인해 주시기 바랍니다.";
+    guidance = "?명꽣???곌껐, 諛⑺솕踰? ?꾨줉?쒖? api.openai.com ?묒냽 媛???щ?瑜??뺤씤??二쇱떆湲?諛붾엻?덈떎.";
   }
   return { code, status, message, guidance };
 }
 
-function cloneCase(subject="과학", input={}) {
-  const source = cases[subject] || cases["과학"];
+function cloneCase(subject="怨쇳븰", input={}) {
+  const source = cases[subject] || cases["怨쇳븰"];
   return {
     meta: {
       title: input.title || source.meta.title,
       subject,
-      grade: input.grade || "5~6학년",
+      grade: input.grade || "5~6?숇뀈",
       lessonCount: input.lessonCount || source.meta.lessonCount,
       output: source.meta.output,
       standard: source.meta.standard,
@@ -178,7 +177,7 @@ app.post("/api/progress", async (req, res) => {
       return res.status(400).json({
         error: {
           code: "INVALID_PROGRESS_PAYLOAD",
-          message: "교사 이름과 접속 식별 정보가 필요합니다."
+          message: "援먯궗 ?대쫫怨??묒냽 ?앸퀎 ?뺣낫媛 ?꾩슂?⑸땲??"
         }
       });
     }
@@ -239,8 +238,8 @@ app.post("/api/progress", async (req, res) => {
     res.status(500).json({
       error: {
         code: "PROGRESS_SAVE_FAILED",
-        message: "교사 진행 상황을 저장하지 못했습니다.",
-        guidance: error?.message || "Supabase 연결 정보와 테이블을 확인해 주시기 바랍니다."
+        message: "援먯궗 吏꾪뻾 ?곹솴????ν븯吏 紐삵뻽?듬땲??",
+        guidance: error?.message || "Supabase ?곌껐 ?뺣낫? ?뚯씠釉붿쓣 ?뺤씤??二쇱떆湲?諛붾엻?덈떎."
       }
     });
   }
@@ -254,7 +253,7 @@ app.post("/api/progress/logout", async (req, res) => {
       return res.status(400).json({
         error: {
           code: "INVALID_LOGOUT_PAYLOAD",
-          message: "접속 식별 정보가 필요합니다."
+          message: "?묒냽 ?앸퀎 ?뺣낫媛 ?꾩슂?⑸땲??"
         }
       });
     }
@@ -287,7 +286,7 @@ app.post("/api/progress/logout", async (req, res) => {
     res.status(500).json({
       error: {
         code: "LOGOUT_SAVE_FAILED",
-        message: "접속 종료 상태를 저장하지 못했습니다."
+        message: "?묒냽 醫낅즺 ?곹깭瑜???ν븯吏 紐삵뻽?듬땲??"
       }
     });
   }
@@ -298,7 +297,7 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(401).json({
       error: {
         code: "INVALID_ADMIN_PASSWORD",
-        message: "관리자 비밀번호가 올바르지 않습니다."
+        message: "愿由ъ옄 鍮꾨?踰덊샇媛 ?щ컮瑜댁? ?딆뒿?덈떎."
       }
     });
   }
@@ -311,7 +310,7 @@ app.post("/api/admin/progress", async (req, res) => {
       return res.status(401).json({
         error: {
           code: "INVALID_ADMIN_PASSWORD",
-          message: "관리자 비밀번호가 올바르지 않습니다."
+          message: "愿由ъ옄 鍮꾨?踰덊샇媛 ?щ컮瑜댁? ?딆뒿?덈떎."
         }
       });
     }
@@ -345,8 +344,8 @@ app.post("/api/admin/progress", async (req, res) => {
     res.status(500).json({
       error: {
         code: "PROGRESS_LOAD_FAILED",
-        message: "교사 진행 상황을 불러오지 못했습니다.",
-        guidance: error?.message || "Supabase 연결 상태를 확인해 주시기 바랍니다."
+        message: "援먯궗 吏꾪뻾 ?곹솴??遺덈윭?ㅼ? 紐삵뻽?듬땲??",
+        guidance: error?.message || "Supabase ?곌껐 ?곹깭瑜??뺤씤??二쇱떆湲?諛붾엻?덈떎."
       }
     });
   }
@@ -358,7 +357,7 @@ app.post("/api/admin/delete-progress", async (req, res) => {
       return res.status(401).json({
         error: {
           code: "INVALID_ADMIN_PASSWORD",
-          message: "관리자 비밀번호가 올바르지 않습니다."
+          message: "愿由ъ옄 鍮꾨?踰덊샇媛 ?щ컮瑜댁? ?딆뒿?덈떎."
         }
       });
     }
@@ -372,7 +371,7 @@ app.post("/api/admin/delete-progress", async (req, res) => {
       return res.status(400).json({
         error: {
           code: "NO_PROGRESS_SELECTED",
-          message: "삭제할 접속 종료 기록을 선택해 주시기 바랍니다."
+          message: "??젣???묒냽 醫낅즺 湲곕줉???좏깮??二쇱떆湲?諛붾엻?덈떎."
         }
       });
     }
@@ -421,7 +420,7 @@ app.post("/api/admin/delete-progress", async (req, res) => {
     res.status(500).json({
       error: {
         code: "PROGRESS_DELETE_FAILED",
-        message: "접속 기록을 삭제하지 못했습니다."
+        message: "?묒냽 湲곕줉????젣?섏? 紐삵뻽?듬땲??"
       }
     });
   }
@@ -433,7 +432,7 @@ app.post("/api/admin/clear-offline", async (req, res) => {
       return res.status(401).json({
         error: {
           code: "INVALID_ADMIN_PASSWORD",
-          message: "관리자 비밀번호가 올바르지 않습니다."
+          message: "愿由ъ옄 鍮꾨?踰덊샇媛 ?щ컮瑜댁? ?딆뒿?덈떎."
         }
       });
     }
@@ -477,7 +476,7 @@ app.post("/api/admin/clear-offline", async (req, res) => {
     res.status(500).json({
       error: {
         code: "OFFLINE_CLEAR_FAILED",
-        message: "오래된 접속 기록을 삭제하지 못했습니다."
+        message: "?ㅻ옒???묒냽 湲곕줉????젣?섏? 紐삵뻽?듬땲??"
       }
     });
   }
@@ -490,26 +489,26 @@ app.post("/api/topic-example", async (req, res) => {
     return res.status(400).json({
       error: {
         code: "MISSING_TOPIC_CONTEXT",
-        message: "교과, 학년, 차시를 모두 선택해 주시기 바랍니다."
+        message: "援먭낵, ?숇뀈, 李⑥떆瑜?紐⑤몢 ?좏깮??二쇱떆湲?諛붾엻?덈떎."
       }
     });
   }
 
   const fallbackBySubject = {
-    "국어": "우리 학교의 불편한 점을 조사하고 설득력 있는 개선 제안 만들기",
-    "사회": "우리 지역의 생활 문제를 조사하고 디지털 지도로 해결 방안 제안하기",
-    "도덕": "온라인에서 서로 존중하는 의사소통 약속 만들기",
-    "수학": "학교생활 자료를 수집·분석하여 더 나은 생활 방법 제안하기",
-    "과학": "학교 환경을 관찰하고 과학적 근거로 개선 방안 설계하기",
-    "실과": "학교생활의 불편함을 해결하는 SW·AI 활용 작품 설계하기",
-    "체육": "우리 반의 건강한 신체활동 참여를 높이는 방법 설계하기",
-    "음악": "학교생활의 이야기를 담은 디지털 음악 콘텐츠 만들기",
-    "미술": "학교의 문제를 알리고 행동을 이끄는 시각 자료 제작하기",
-    "영어": "학교를 더 좋은 곳으로 만드는 아이디어를 영어로 소개하기"
+    "援?뼱": "?곕━ ?숆탳??遺덊렪???먯쓣 議곗궗?섍퀬 ?ㅻ뱷???덈뒗 媛쒖꽑 ?쒖븞 留뚮뱾湲?,
+    "?ы쉶": "?곕━ 吏??쓽 ?앺솢 臾몄젣瑜?議곗궗?섍퀬 ?붿???吏?꾨줈 ?닿껐 諛⑹븞 ?쒖븞?섍린",
+    "?꾨뜒": "?⑤씪?몄뿉???쒕줈 議댁쨷?섎뒗 ?섏궗?뚰넻 ?쎌냽 留뚮뱾湲?,
+    "?섑븰": "?숆탳?앺솢 ?먮즺瑜??섏쭛쨌遺꾩꽍?섏뿬 ???섏? ?앺솢 諛⑸쾿 ?쒖븞?섍린",
+    "怨쇳븰": "?숆탳 ?섍꼍??愿李고븯怨?怨쇳븰??洹쇨굅濡?媛쒖꽑 諛⑹븞 ?ㅺ퀎?섍린",
+    "?ㅺ낵": "?숆탳?앺솢??遺덊렪?⑥쓣 ?닿껐?섎뒗 SW쨌AI ?쒖슜 ?묓뭹 ?ㅺ퀎?섍린",
+    "泥댁쑁": "?곕━ 諛섏쓽 嫄닿컯???좎껜?쒕룞 李몄뿬瑜??믪씠??諛⑸쾿 ?ㅺ퀎?섍린",
+    "?뚯븙": "?숆탳?앺솢???댁빞湲곕? ?댁? ?붿????뚯븙 肄섑뀗痢?留뚮뱾湲?,
+    "誘몄닠": "?숆탳??臾몄젣瑜??뚮━怨??됰룞???대걚???쒓컖 ?먮즺 ?쒖옉?섍린",
+    "?곸뼱": "?숆탳瑜???醫뗭? 怨녹쑝濡?留뚮뱶???꾩씠?붿뼱瑜??곸뼱濡??뚭컻?섍린"
   };
 
-  const fallbackTitle = `${grade} ${subject} ${lessonCount} 수업: ${
-    fallbackBySubject[subject] || "생활 속 문제를 발견하고 SW·AI로 해결 방안 만들기"
+  const fallbackTitle = `${grade} ${subject} ${lessonCount} ?섏뾽: ${
+    fallbackBySubject[subject] || "?앺솢 ??臾몄젣瑜?諛쒓껄?섍퀬 SW쨌AI濡??닿껐 諛⑹븞 留뚮뱾湲?
   }`;
 
   const client = getClient();
@@ -520,8 +519,8 @@ app.post("/api/topic-example", async (req, res) => {
       apiError: {
         code: "MISSING_API_KEY",
         status: 0,
-        message: "OPENAI_API_KEY가 설정되지 않아 교과·학년·차시 기반 기본 예시를 생성했습니다.",
-        guidance: ".env에 API 키를 입력하면 AI가 새로운 수업 주제를 생성합니다."
+        message: "OPENAI_API_KEY媛 ?ㅼ젙?섏? ?딆븘 援먭낵쨌?숇뀈쨌李⑥떆 湲곕컲 湲곕낯 ?덉떆瑜??앹꽦?덉뒿?덈떎.",
+        guidance: ".env??API ?ㅻ? ?낅젰?섎㈃ AI媛 ?덈줈???섏뾽 二쇱젣瑜??앹꽦?⑸땲??"
       }
     });
   }
@@ -529,15 +528,15 @@ app.post("/api/topic-example", async (req, res) => {
   try {
     const response = await client.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-      input: `초등학교 ${grade} ${subject} ${lessonCount} 분량의 SW·AI 활용 수업 주제 1개를 생성하라.
-조건:
-- 초등학생의 문제해결력과 의사소통능력을 함께 기를 수 있어야 한다.
-- 해당 교과의 학습 특성이 드러나야 한다.
-- 학생 생활과 연결된 실제 문제 또는 도전 과제를 포함한다.
-- 수업 주제에는 SW·AI 활용 여부나 특정 디지털 도구를 미리 포함하지 않는다.
-- 문제해결에 SW·AI가 필요한지는 이후 수업 설계 단계에서 별도로 판단할 수 있도록 교과 학습과 문제 상황 중심으로 작성한다.
-- 수업 주제 제목만 25~45자 정도의 자연스러운 한국어로 작성한다.
-- 저장된 교과 사례나 기존 예시를 복사하지 말고 새롭게 생성한다.`,
+      input: `珥덈벑?숆탳 ${grade} ${subject} ${lessonCount} 遺꾨웾??SW쨌AI ?쒖슜 ?섏뾽 二쇱젣 1媛쒕? ?앹꽦?섎씪.
+議곌굔:
+- 珥덈벑?숈깮??臾몄젣?닿껐?κ낵 ?섏궗?뚰넻?λ젰???④퍡 湲곕? ???덉뼱???쒕떎.
+- ?대떦 援먭낵???숈뒿 ?뱀꽦???쒕윭?섏빞 ?쒕떎.
+- ?숈깮 ?앺솢怨??곌껐???ㅼ젣 臾몄젣 ?먮뒗 ?꾩쟾 怨쇱젣瑜??ы븿?쒕떎.
+- ?섏뾽 二쇱젣?먮뒗 SW쨌AI ?쒖슜 ?щ????뱀젙 ?붿????꾧뎄瑜?誘몃━ ?ы븿?섏? ?딅뒗??
+- 臾몄젣?닿껐??SW쨌AI媛 ?꾩슂?쒖????댄썑 ?섏뾽 ?ㅺ퀎 ?④퀎?먯꽌 蹂꾨룄濡??먮떒?????덈룄濡?援먭낵 ?숈뒿怨?臾몄젣 ?곹솴 以묒떖?쇰줈 ?묒꽦?쒕떎.
+- ?섏뾽 二쇱젣 ?쒕ぉ留?25~45???뺣룄???먯뿰?ㅻ윭???쒓뎅?대줈 ?묒꽦?쒕떎.
+- ??λ맂 援먭낵 ?щ???湲곗〈 ?덉떆瑜?蹂듭궗?섏? 留먭퀬 ?덈∼寃??앹꽦?쒕떎.`,
       text: {
         format: {
           type: "json_schema",
@@ -571,14 +570,14 @@ app.post("/api/topic-example", async (req, res) => {
 
 app.get("/api/case/:subject", (req,res) => {
   const data=cases[req.params.subject];
-  if (!data) return res.status(404).json({error:{code:"CASE_NOT_FOUND",message:"해당 교과 사례를 찾을 수 없다."}});
+  if (!data) return res.status(404).json({error:{code:"CASE_NOT_FOUND",message:"?대떦 援먭낵 ?щ?瑜?李얠쓣 ???녿떎."}});
   res.json(data);
 });
 
 
 app.post("/api/coaching-start", (req,res) => {
   const input=req.body || {};
-  const subject=cases[input.subject] ? input.subject : "과학";
+  const subject=cases[input.subject] ? input.subject : "怨쇳븰";
   const base=cloneCase(subject,input);
   base.steps=base.steps.map(step=>({
     ...step,
@@ -593,15 +592,15 @@ app.post("/api/coaching-start", (req,res) => {
 
 app.post("/api/coach-analysis", async (req,res) => {
   const {stepIndex=0,meta={},answers={},selectedOption="",reason=""}=req.body || {};
-  const subject=cases[meta.subject] ? meta.subject : "과학";
+  const subject=cases[meta.subject] ? meta.subject : "怨쇳븰";
   const fallbackAlternatives=[
-    `${meta.title||"수업 주제"}를 학생 생활의 실제 문제와 연결한다.`,
-    `학생이 자료를 수집하고 근거를 비교하여 해결 방향을 정하게 한다.`,
-    `학생의 설명·협의·수정 과정이 드러나는 활동으로 구성한다.`
+    `${meta.title||"?섏뾽 二쇱젣"}瑜??숈깮 ?앺솢???ㅼ젣 臾몄젣? ?곌껐?쒕떎.`,
+    `?숈깮???먮즺瑜??섏쭛?섍퀬 洹쇨굅瑜?鍮꾧탳?섏뿬 ?닿껐 諛⑺뼢???뺥븯寃??쒕떎.`,
+    `?숈깮???ㅻ챸쨌?묒쓽쨌?섏젙 怨쇱젙???쒕윭?섎뒗 ?쒕룞?쇰줈 援ъ꽦?쒕떎.`
   ];
   const fallback={
-    feedback:`현재 입력에는 수업의 핵심 방향이 포함되어 있습니다. 학생이 직접 판단할 부분과 SW·AI가 지원할 부분을 더 분명히 구분해 보시기 바랍니다.`,
-    checkQuestion:"이 선택이 학생의 문제해결 행동과 의사소통 행동을 실제로 이끌 수 있는지 확인해 보시겠습니까?",
+    feedback:`?꾩옱 ?낅젰?먮뒗 ?섏뾽???듭떖 諛⑺뼢???ы븿?섏뼱 ?덉뒿?덈떎. ?숈깮??吏곸젒 ?먮떒??遺遺꾧낵 SW쨌AI媛 吏?먰븷 遺遺꾩쓣 ??遺꾨챸??援щ텇??蹂댁떆湲?諛붾엻?덈떎.`,
+    checkQuestion:"???좏깮???숈깮??臾몄젣?닿껐 ?됰룞怨??섏궗?뚰넻 ?됰룞???ㅼ젣濡??대걣 ???덈뒗吏 ?뺤씤??蹂댁떆寃좎뒿?덇퉴?",
     alternatives:fallbackAlternatives
   };
   const client=getClient();
@@ -609,13 +608,13 @@ app.post("/api/coach-analysis", async (req,res) => {
   try{
     const response=await client.responses.create({
       model:process.env.OPENAI_MODEL || "gpt-4.1-mini",
-      input:`초등 SW·AI 수업 설계 코치로서 교사의 판단을 분석하라.
-단계:${stepIndex+1}
-수업:${JSON.stringify(meta)}
-교사 답변:${JSON.stringify(answers)}
-선택:${selectedOption}
-이유:${reason}
-교사의 생각을 대신 완성하지 말고, 강점 1개와 보완점 1개를 포함한 피드백, 점검 질문 1개, 서로 다른 설계 대안 3개를 한국어로 제시하라.`,
+      input:`珥덈벑 SW쨌AI ?섏뾽 ?ㅺ퀎 肄붿튂濡쒖꽌 援먯궗???먮떒??遺꾩꽍?섎씪.
+?④퀎:${stepIndex+1}
+?섏뾽:${JSON.stringify(meta)}
+援먯궗 ?듬?:${JSON.stringify(answers)}
+?좏깮:${selectedOption}
+?댁쑀:${reason}
+援먯궗???앷컖??????꾩꽦?섏? 留먭퀬, 媛뺤젏 1媛쒖? 蹂댁셿??1媛쒕? ?ы븿???쇰뱶諛? ?먭? 吏덈Ц 1媛? ?쒕줈 ?ㅻⅨ ?ㅺ퀎 ???3媛쒕? ?쒓뎅?대줈 ?쒖떆?섎씪.`,
       text:{format:{type:"json_schema",name:"coach_analysis",strict:true,schema:{
         type:"object",additionalProperties:false,required:["feedback","checkQuestion","alternatives"],
         properties:{feedback:{type:"string"},checkQuestion:{type:"string"},alternatives:{type:"array",minItems:3,maxItems:3,items:{type:"string"}}}
@@ -629,11 +628,11 @@ app.post("/api/coach-analysis", async (req,res) => {
 
 app.post("/api/design-step", async (req,res) => {
   const {stepIndex=0,meta={},teacherThinking={},finalDecision=""}=req.body || {};
-  const subject=cases[meta.subject] ? meta.subject : "과학";
+  const subject=cases[meta.subject] ? meta.subject : "怨쇳븰";
   const caseStep=structuredClone(cases[subject].steps[stepIndex]);
   const fallbackItems=caseStep.items.map(item=>({
     label:item.label,
-    content:`${finalDecision||teacherThinking.reason||meta.title}을 바탕으로 ${item.content}`
+    content:`${finalDecision||teacherThinking.reason||meta.title}??諛뷀깢?쇰줈 ${item.content}`
   }));
   const fallbackFive=stepIndex===1 ? structuredClone(cases[subject].fiveStage||[]) : null;
   const client=getClient();
@@ -658,12 +657,12 @@ app.post("/api/design-step", async (req,res) => {
     }
     const response=await client.responses.create({
       model:process.env.OPENAI_MODEL || "gpt-4.1-mini",
-      input:`초등 SW·AI 수업 설계의 ${stepIndex+1}단계만 작성하라.
-수업 정보:${JSON.stringify(meta)}
-교사의 생각:${JSON.stringify(teacherThinking)}
-교사의 최종 결정:${finalDecision}
-참고 단계:${JSON.stringify(caseStep)}
-항목명과 항목 수는 참고 단계와 정확히 같게 유지하라. 교사의 결정을 중심으로 학생 문제해결 행동과 의사소통 행동을 구체화하라. AI가 학생 사고를 대신하지 않게 하라.`,
+      input:`珥덈벑 SW쨌AI ?섏뾽 ?ㅺ퀎??${stepIndex+1}?④퀎留??묒꽦?섎씪.
+?섏뾽 ?뺣낫:${JSON.stringify(meta)}
+援먯궗???앷컖:${JSON.stringify(teacherThinking)}
+援먯궗??理쒖쥌 寃곗젙:${finalDecision}
+李멸퀬 ?④퀎:${JSON.stringify(caseStep)}
+??ぉ紐낃낵 ??ぉ ?섎뒗 李멸퀬 ?④퀎? ?뺥솗??媛숆쾶 ?좎??섎씪. 援먯궗??寃곗젙??以묒떖?쇰줈 ?숈깮 臾몄젣?닿껐 ?됰룞怨??섏궗?뚰넻 ?됰룞??援ъ껜?뷀븯?? AI媛 ?숈깮 ?ш퀬瑜???좏븯吏 ?딄쾶 ?섎씪.`,
       text:{format:{type:"json_schema",name:"lesson_step",strict:true,schema}}
     });
     res.json({...JSON.parse(response.output_text),demo:false});
@@ -674,13 +673,13 @@ app.post("/api/design-step", async (req,res) => {
 
 app.post("/api/design", async (req,res) => {
   const input=req.body || {};
-  const subject=cases[input.subject] ? input.subject : "과학";
+  const subject=cases[input.subject] ? input.subject : "怨쇳븰";
   const fallback=cloneCase(subject,input);
   const client=getClient();
   if (!client) {
     return res.json({
       design:fallback,demo:true,
-      apiError:{code:"MISSING_API_KEY",status:0,message:"OPENAI_API_KEY가 설정되지 않았습니다.",guidance:".env 파일에 API 키를 입력한 뒤 서버를 다시 시작해 주시기 바랍니다."}
+      apiError:{code:"MISSING_API_KEY",status:0,message:"OPENAI_API_KEY媛 ?ㅼ젙?섏? ?딆븯?듬땲??",guidance:".env ?뚯씪??API ?ㅻ? ?낅젰?????쒕쾭瑜??ㅼ떆 ?쒖옉??二쇱떆湲?諛붾엻?덈떎."}
     });
   }
   try {
@@ -712,7 +711,7 @@ app.post("/api/design", async (req,res) => {
 
 app.post("/api/process-rewrite", async (req,res) => {
   const {mode,rows=[],meta={}}=req.body || {};
-  const subject=cases[meta?.subject] ? meta.subject : "과학";
+  const subject=cases[meta?.subject] ? meta.subject : "怨쇳븰";
   const caseRows=structuredClone(cases[subject].fiveStage || []);
   const sourceRows=Array.isArray(rows) && rows.length ? rows : caseRows;
 
@@ -744,21 +743,21 @@ app.post("/api/process-rewrite", async (req,res) => {
       apiError:{
         code:"MISSING_API_KEY",
         status:0,
-        message:"OPENAI_API_KEY가 설정되지 않아 교과 사례 기반 결과를 사용했습니다.",
-        guidance:".env에 API 키를 입력하고 서버를 다시 시작해 주시기 바랍니다."
+        message:"OPENAI_API_KEY媛 ?ㅼ젙?섏? ?딆븘 援먭낵 ?щ? 湲곕컲 寃곌낵瑜??ъ슜?덉뒿?덈떎.",
+        guidance:".env??API ?ㅻ? ?낅젰?섍퀬 ?쒕쾭瑜??ㅼ떆 ?쒖옉??二쇱떆湲?諛붾엻?덈떎."
       }
     });
   }
 
   try{
     const instruction=mode==="simplify"
-      ? `다음 초등 수업의 문제해결 5단계 표를 핵심 의미를 유지하면서 각 셀을 더 짧고 명확하게 다시 작성하라.
-교과:${meta.subject} / 학년:${meta.grade} / 주제:${meta.title}
-현재 표:${JSON.stringify(sourceRows, null, 2)}`
-      : `다음 교과 사례를 참고하여 새 수업 주제에 맞는 문제해결 5단계 표를 다시 작성하라.
-교과:${meta.subject} / 학년:${meta.grade} / 주제:${meta.title}
-참고 사례:${JSON.stringify(caseRows, null, 2)}
-각 단계는 단계명, 단계별 학생 활동, 중점 의사소통 요소, 학생 문장 틀, 단계별 교사 발문을 포함한다.`;
+      ? `?ㅼ쓬 珥덈벑 ?섏뾽??臾몄젣?닿껐 5?④퀎 ?쒕? ?듭떖 ?섎?瑜??좎??섎㈃??媛??????吏㏐퀬 紐낇솗?섍쾶 ?ㅼ떆 ?묒꽦?섎씪.
+援먭낵:${meta.subject} / ?숇뀈:${meta.grade} / 二쇱젣:${meta.title}
+?꾩옱 ??${JSON.stringify(sourceRows, null, 2)}`
+      : `?ㅼ쓬 援먭낵 ?щ?瑜?李멸퀬?섏뿬 ???섏뾽 二쇱젣??留욌뒗 臾몄젣?닿껐 5?④퀎 ?쒕? ?ㅼ떆 ?묒꽦?섎씪.
+援먭낵:${meta.subject} / ?숇뀈:${meta.grade} / 二쇱젣:${meta.title}
+李멸퀬 ?щ?:${JSON.stringify(caseRows, null, 2)}
+媛??④퀎???④퀎紐? ?④퀎蹂??숈깮 ?쒕룞, 以묒젏 ?섏궗?뚰넻 ?붿냼, ?숈깮 臾몄옣 ?, ?④퀎蹂?援먯궗 諛쒕Ц???ы븿?쒕떎.`;
 
     const response=await client.responses.create({
       model:process.env.OPENAI_MODEL || "gpt-4.1-mini",
@@ -806,22 +805,22 @@ app.post("/api/process-rewrite", async (req,res) => {
 
 app.post("/api/rewrite", async (req,res) => {
   const {mode,label,content,stepName,meta}=req.body || {};
-  const subject=cases[meta?.subject] ? meta.subject : "과학";
+  const subject=cases[meta?.subject] ? meta.subject : "怨쇳븰";
   const caseItem=cases[subject].steps.flatMap(s=>s.items).find(i=>i.label===label);
   const fallback = mode==="simplify" ? simplifyFallback(content) : regenerateFallback(content,caseItem?.content,label,meta);
   const client=getClient();
   if (!client) return res.json({
     text:fallback,demo:true,
-    apiError:{code:"MISSING_API_KEY",status:0,message:"OPENAI_API_KEY가 설정되지 않아 교과 사례 기반 문장을 사용했습니다.",guidance:".env에 API 키를 입력하고 서버를 다시 시작해 주시기 바랍니다."}
+    apiError:{code:"MISSING_API_KEY",status:0,message:"OPENAI_API_KEY媛 ?ㅼ젙?섏? ?딆븘 援먭낵 ?щ? 湲곕컲 臾몄옣???ъ슜?덉뒿?덈떎.",guidance:".env??API ?ㅻ? ?낅젰?섍퀬 ?쒕쾭瑜??ㅼ떆 ?쒖옉??二쇱떆湲?諛붾엻?덈떎."}
   });
   try {
     const instruction=mode==="simplify"
-      ? `다음 초등 수업 설계 문장을 핵심 의미와 구체적 행동을 유지하면서 1~2문장, 원문의 약 55% 길이로 간결하게 다시 써라. 결과만 출력하라.\n${content}`
-      : `아래 교과 사례와 현재 문장을 참고하되 복사하지 말고, 항목에 맞는 구체적인 수업 설계 문장 2문장으로 다시 작성하라.
-교과:${meta?.subject} / 학년:${meta?.grade} / 주제:${meta?.title}
-단계:${stepName} / 항목:${label}
-교과 사례:${caseItem?.content || ""}
-현재 문장:${content}`;
+      ? `?ㅼ쓬 珥덈벑 ?섏뾽 ?ㅺ퀎 臾몄옣???듭떖 ?섎?? 援ъ껜???됰룞???좎??섎㈃??1~2臾몄옣, ?먮Ц????55% 湲몄씠濡?媛꾧껐?섍쾶 ?ㅼ떆 ?⑤씪. 寃곌낵留?異쒕젰?섎씪.\n${content}`
+      : `?꾨옒 援먭낵 ?щ?? ?꾩옱 臾몄옣??李멸퀬?섎릺 蹂듭궗?섏? 留먭퀬, ??ぉ??留욌뒗 援ъ껜?곸씤 ?섏뾽 ?ㅺ퀎 臾몄옣 2臾몄옣?쇰줈 ?ㅼ떆 ?묒꽦?섎씪.
+援먭낵:${meta?.subject} / ?숇뀈:${meta?.grade} / 二쇱젣:${meta?.title}
+?④퀎:${stepName} / ??ぉ:${label}
+援먭낵 ?щ?:${caseItem?.content || ""}
+?꾩옱 臾몄옣:${content}`;
     const response=await client.responses.create({model:process.env.OPENAI_MODEL || "gpt-4.1-mini",input:instruction});
     res.json({text:response.output_text.trim(),demo:false});
   } catch(error) {
@@ -838,19 +837,19 @@ function simplifyFallback(text="") {
     const colon=trimmed.indexOf(":");
     const prefix=colon>=0 ? trimmed.slice(0,colon+1)+" " : "";
     let body=colon>=0 ? trimmed.slice(colon+1).trim() : trimmed;
-    body=body.replace(/할 수 있도록/g,"하도록").replace(/하도록 설계한다/g,"하게 한다").replace(/학생이 스스로/g,"학생이");
+    body=body.replace(/?????덈룄濡?g,"?섎룄濡?).replace(/?섎룄濡??ㅺ퀎?쒕떎/g,"?섍쾶 ?쒕떎").replace(/?숈깮???ㅼ뒪濡?g,"?숈깮??);
     const sentences=body.split(/(?<=[.!?])\s+/).filter(Boolean);
     body=sentences[0] || body;
-    if(body.length>90) body=body.slice(0,88).replace(/\s+\S*$/,"…");
+    if(body.length>90) body=body.slice(0,88).replace(/\s+\S*$/,"??);
     return prefix+body;
   };
   return String(text||"").split(/\r?\n/).map(cleanLine).filter(Boolean).join("\n");
 }
 function regenerateFallback(current="",caseText="",label="",meta={}) {
-  const fiveLabels=["단계별 학생 활동","단계별 중점 의사소통 요소","학생 문장 틀","단계별 교사 발문"];
+  const fiveLabels=["?④퀎蹂??숈깮 ?쒕룞","?④퀎蹂?以묒젏 ?섏궗?뚰넻 ?붿냼","?숈깮 臾몄옣 ?","?④퀎蹂?援먯궗 諛쒕Ц"];
   if(fiveLabels.includes(label) && caseText) return caseText;
   const base=caseText || current;
-  return `${meta?.grade || "학생"}이 ${base.replace(/[.。]$/,"")} 활동을 수행한다. 모둠은 결과의 근거를 확인하고 ‘${label}’의 적절성을 협의하여 수정 내용을 기록한다.`;
+  return `${meta?.grade || "?숈깮"}??${base.replace(/[.??$/,"")} ?쒕룞???섑뻾?쒕떎. 紐⑤몺? 寃곌낵??洹쇨굅瑜??뺤씤?섍퀬 ??{label}?숈쓽 ?곸젅?깆쓣 ?묒쓽?섏뿬 ?섏젙 ?댁슜??湲곕줉?쒕떎.`;
 }
 
-app.listen(port,()=>console.log(`SW·AI 수업 설계 코치 v4.4: http://localhost:${port}`));
+app.listen(port,()=>console.log(`SW쨌AI ?섏뾽 ?ㅺ퀎 肄붿튂 v4.4: http://localhost:${port}`));

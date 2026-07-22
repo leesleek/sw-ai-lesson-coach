@@ -834,6 +834,86 @@ app.post("/api/rewrite", async (req,res) => {
   }
 });
 
+function buildFallbackWorksheet(design={}) {
+  const meta = design.meta || {};
+  const fiveStage = Array.isArray(design.fiveStage) ? design.fiveStage : [];
+
+  const sections = fiveStage.length
+    ? fiveStage.map(stage => ({
+        type: "prompt",
+        title: stage.stage || "활동 단계",
+        guide: stage.problemActivity || stage.communicationActivity || "오늘의 활동 내용을 정리해 봅시다.",
+        prompts: [stage.sentenceFrame, stage.teacherQuestion].filter(Boolean).length
+          ? [stage.sentenceFrame, stage.teacherQuestion].filter(Boolean)
+          : ["오늘 활동에서 한 일을 적어 봅시다.", "친구와 나눈 이야기를 적어 봅시다."]
+      }))
+    : [{
+        type: "prompt",
+        title: "문제 이해하기",
+        guide: "오늘 수업에서 해결할 문제를 정리해 봅시다.",
+        prompts: ["문제 상황은 무엇인가요?", "우리가 해결해야 할 점은 무엇인가요?"]
+      }];
+
+  sections.push({
+    type: "reflection",
+    title: "돌아보기",
+    guide: "오늘 활동을 통해 배운 점을 정리해 봅시다.",
+    prompts: ["오늘 배운 점은 무엇인가요?", "더 알아보고 싶은 점은 무엇인가요?"]
+  });
+
+  return {
+    title: `${meta.title || "수업"} 학생 활동지`,
+    subtitle: `${meta.grade || ""} ${meta.subject || ""} · ${meta.lessonCount || ""}`.trim(),
+    studentInfoLabels: ["이름", "모둠", "날짜"],
+    learningGoal: meta.output || "문제를 이해하고 친구와 협력하여 해결안을 만들어 봅시다.",
+    sections
+  };
+}
+
+app.post("/api/student-worksheet", async (req,res) => {
+  const {design={}}=req.body || {};
+  const fallback=buildFallbackWorksheet(design);
+  const client=getClient();
+  if (!client) return res.json({
+    worksheet:fallback,demo:true,
+    apiError:{code:"MISSING_API_KEY",status:0,message:"OPENAI_API_KEY가 설정되지 않아 수업 설계 기반 기본 활동지를 생성했습니다.",guidance:".env에 API 키를 입력하고 서버를 다시 시작해 주시기 바랍니다."}
+  });
+  try {
+    const response=await client.responses.create({
+      model:process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      input:`다음 초등 SW·AI 수업 설계를 바탕으로 학생용 활동지를 작성하라.
+수업 설계:${JSON.stringify(design)}
+조건:
+- 학생이 직접 기록할 수 있는 활동지 형태로 작성한다.
+- 각 section의 type은 prompt, comparison, table, reflection 중 하나를 사용한다.
+- 마지막 section은 reflection 유형으로 오늘 배운 점을 되돌아보게 한다.
+- prompts는 학생이 답할 구체적인 질문이나 항목으로 작성한다.`,
+      text:{format:{type:"json_schema",name:"student_worksheet",strict:true,schema:{
+        type:"object",additionalProperties:false,required:["worksheet"],properties:{
+          worksheet:{type:"object",additionalProperties:false,required:["title","subtitle","studentInfoLabels","learningGoal","sections"],properties:{
+            title:{type:"string"},subtitle:{type:"string"},
+            studentInfoLabels:{type:"array",minItems:3,maxItems:3,items:{type:"string"}},
+            learningGoal:{type:"string"},
+            sections:{type:"array",minItems:3,maxItems:6,items:{
+              type:"object",additionalProperties:false,required:["type","title","guide","prompts"],properties:{
+                type:{type:"string",enum:["prompt","comparison","table","reflection"]},
+                title:{type:"string"},guide:{type:"string"},
+                prompts:{type:"array",minItems:2,maxItems:5,items:{type:"string"}}
+              }
+            }}
+          }}
+        }
+      }}}
+    });
+    const parsed=JSON.parse(response.output_text);
+    res.json({worksheet:parsed.worksheet,demo:false});
+  } catch(error) {
+    const apiError=apiErrorPayload(error);
+    console.error("[OpenAI student worksheet error]",apiError);
+    res.json({worksheet:fallback,demo:true,apiError});
+  }
+});
+
 function simplifyFallback(text="") {
   const cleanLine = (line) => {
     const trimmed=String(line||"").replace(/\s+/g," ").trim();

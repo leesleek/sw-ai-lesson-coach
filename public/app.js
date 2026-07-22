@@ -698,10 +698,16 @@ function currentWorksheetHtml(){
  </style></head><body>${content}</body></html>`;
 }
 
+function toWordDoc(html){
+ return html
+   .replace("<html lang=\"ko\">", "<html lang=\"ko\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" xmlns=\"http://www.w3.org/TR/REC-html40\">")
+   .replace("<meta charset=\"utf-8\">", "<meta charset=\"utf-8\"><meta name=\"ProgId\" content=\"Word.Document\"><meta name=\"Generator\" content=\"Microsoft Word 15\"><meta name=\"Originator\" content=\"Microsoft Word 15\"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->");
+}
+
 function saveWorksheetAsWord(){
  if(!state.worksheet)return;
  saveWorksheetEdits();
- const blob=new Blob(["\ufeff",currentWorksheetHtml()],{type:"application/msword;charset=utf-8"});
+ const blob=new Blob(["\ufeff",toWordDoc(currentWorksheetHtml())],{type:"application/msword;charset=utf-8"});
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
  a.href=url;
@@ -752,7 +758,7 @@ $("#worksheet-dialog")?.addEventListener("close",saveWorksheetEdits);
 function escapeHtml(text=""){return String(text).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
 function buildExportHtml(){const m=state.design.meta;const sections=state.design.steps.map(step=>`<section><h2>${step.id}. ${escapeHtml(step.name)}</h2>${step.id===2&&state.design.fiveStage?`<table><thead><tr><th>문제해결 5단계</th><th>단계별 학생 활동</th><th>중점 의사소통 요소</th><th>학생 문장 틀</th><th>단계별 교사 발문</th></tr></thead><tbody>${state.design.fiveStage.map(r=>`<tr><td>${escapeHtml(r.stage)}</td><td>${escapeHtml(r.problemActivity)}</td><td>${escapeHtml(r.focus||r.communicationActivity)}</td><td>${escapeHtml(r.sentenceFrame)}</td><td>${escapeHtml(r.teacherQuestion)}</td></tr>`).join("")}</tbody></table>`:`<dl>${step.items.map(i=>`<dt>${escapeHtml(i.label)}</dt><dd>${escapeHtml(i.content)}</dd>`).join("")}</dl>`}</section>`).join("");return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(m.title)}</title><style>body{font-family:"Malgun Gothic",Arial,sans-serif;color:#1c3348;line-height:1.65;margin:38px}h1{color:#123f71;border-bottom:3px solid #123f71;padding-bottom:12px}h2{color:#0f6f78;margin-top:30px;border-left:6px solid #0f8f93;padding-left:10px}.meta{background:#f3f7f9;padding:14px 18px;border-radius:10px}dt{font-weight:700;margin-top:14px;color:#123f71}dd{margin:4px 0 0}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border:1px solid #adbcc7;padding:7px;vertical-align:top}th{background:#edf6fd}@page{size:A4;margin:15mm}</style></head><body><h1>문제해결력과 의사소통능력 강화를 위한 SW·AI 수업 설계안</h1><div class="meta"><b>교사:</b> ${escapeHtml(teacherName())}<br><b>교과:</b> ${escapeHtml(m.subject)} · <b>학년:</b> ${escapeHtml(m.grade)} · <b>차시:</b> ${escapeHtml(m.lessonCount)}<br><b>주제:</b> ${escapeHtml(m.title)}</div>${sections}</body></html>`;}
 function saveAsPdf(){const win=window.open("","_blank");if(!win){showError({code:"POPUP_BLOCKED",message:"PDF 저장 창을 열 수 없습니다.",guidance:"브라우저의 팝업 차단을 해제해 주시기 바랍니다."});return;}win.document.write(buildExportHtml());win.document.close();win.focus();setTimeout(()=>win.print(),400);}
-function saveAsWord(){const blob=new Blob(["\ufeff",buildExportHtml()],{type:"application/msword;charset=utf-8"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=(state.design.meta.title||"SWAI_수업설계안").replace(/[\\/:*?"<>|]/g,"_")+".doc";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);showToast("Word 문서 저장을 시작했습니다.");}
+function saveAsWord(){const blob=new Blob(["\ufeff",toWordDoc(buildExportHtml())],{type:"application/msword;charset=utf-8"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=(state.design.meta.title||"SWAI_수업설계안").replace(/[\\/:*?"<>|]/g,"_")+".doc";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);showToast("Word 문서 저장을 시작했습니다.");}
 
 on("#overview-button","click",()=>{if(!state.design)return;$("#overview-content").innerHTML=state.design.steps.map(s=>`<section class="overview-step"><h3>${s.id}. ${s.name}</h3><ul>${s.items.map(i=>`<li><strong>${i.label}</strong>: ${i.content}</li>`).join("")}</ul></section>`).join("");$("#overview-dialog").showModal()});
 on("#save-pdf","click",saveAsPdf);

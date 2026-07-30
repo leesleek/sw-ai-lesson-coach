@@ -13,28 +13,31 @@
 앱스토어·플레이스토어에 올리는 네이티브 앱이 아니라 **PWA**다. 주소만 있으면 설치되고,
 한 번 열어 두면 서비스 워커가 파일을 캐시해 인터넷 없이도 실행된다.
 
-### 1단계 — 인터넷 주소 만들기 (둘 중 하나)
+### 1단계 — GitHub Pages로 배포하기
 
-**방법 A. 지금 쓰는 Render 서비스에 함께 올리기 (가장 간단)**
+서버가 필요 없고, 잠들지 않으며, 무료다. 이 저장소는 공개 저장소이므로 바로 켤 수 있다.
+`.github/workflows/gym-pages.yml`이 `public/gym` 폴더만 Pages로 올리도록 준비되어 있다
+(수업 설계 코치는 서버가 필요하므로 Pages에 올리지 않는다).
 
-1. `claude/4week-gym-guide-app-2jswbt` 브랜치를 `main`에 병합한다.
-2. `render.yaml`에 `autoDeploy: true`가 있으므로 Render가 자동으로 다시 배포한다.
-3. 주소는 `https://<Render 서비스 주소>/gym/` 이다. 별도 설정·환경변수가 필요 없고,
-   수업 설계 코치의 로그인과도 무관하다(정적 파일로 바로 서비스된다).
+1. 워크플로가 담긴 브랜치를 `main`에 병합한다.
+   Pages 배포는 기본 브랜치에서만 실행되므로 이 단계가 필요하다.
+2. GitHub 저장소 → **Settings → Pages** → **Source: `GitHub Actions`** 선택
+   (`Deploy from a branch`가 아니다. 한 번만 설정하면 된다.)
+3. **Actions** 탭에서 `Deploy gym app to GitHub Pages`가 초록색으로 끝나는지 확인한다.
+   자동으로 실행되지 않으면 워크플로 화면에서 `Run workflow`를 누른다.
+4. 완성된 주소: **`https://leesleek.github.io/sw-ai-lesson-coach/`**
 
-> Render 무료 플랜은 15분쯤 접속이 없으면 잠들어서 **첫 접속이 40~60초** 걸릴 수 있다.
-> 다만 홈 화면에 설치한 뒤에는 캐시에서 바로 열리므로, 헬스장에서 실제로 쓸 때는 느리지 않다.
-> 운동 기록도 서버가 아니라 휴대폰에 저장되므로 서버가 잠들어 있어도 문제없다.
+이후 `public/gym/` 안의 파일을 고쳐 `main`에 올리면 자동으로 다시 배포된다.
+Pages가 실제로 서비스하는 구조(`/sw-ai-lesson-coach/` 하위)로 오프라인 실행까지 확인했다.
 
-**방법 B. GitHub Pages (서버 없이, 잠들지 않음, 무료)**
+> 병합하기 전에 먼저 휴대폰에서 써 보고 싶다면, **Settings → Pages**에서
+> `Deploy from a branch` → 브랜치 `claude/4week-gym-guide-app-2jswbt` / `/ (root)`로 두면
+> `https://leesleek.github.io/sw-ai-lesson-coach/public/gym/`에서 임시로 동작한다.
+> 다만 주소가 길고 작업 브랜치에 묶이므로, 확인 후에는 위 방식으로 바꾸는 것이 좋다.
 
-이 저장소는 공개 저장소이므로 Pages를 바로 켤 수 있다.
-
-1. GitHub 저장소 → **Settings → Pages**
-2. Source: `Deploy from a branch`, Branch: `main` / `/ (root)` → Save
-3. 1~2분 후 주소: `https://leesleek.github.io/sw-ai-lesson-coach/public/gym/`
-
-두 경로 모두 오프라인 캐시가 동작하는 것을 확인했다.
+> 참고 — Render 서비스에도 함께 올라간다. `main`에 병합하면 `autoDeploy: true` 설정 때문에
+> Render가 다시 배포되고 `https://<Render 주소>/gym/`으로도 열린다(정적 파일이라 로그인과 무관).
+> 다만 무료 플랜은 15분쯤 접속이 없으면 잠들어 첫 접속이 40~60초 걸리므로, Pages 주소를 쓰는 편이 낫다.
 
 ### 2단계 — 홈 화면에 추가
 
@@ -112,8 +115,16 @@ public/gym/
   speech.js       음성 안내·신호음·진동·격려 멘트
   store.js        설정·진행·기록 저장
   sw.js           오프라인 캐시
-  manifest.webmanifest, icon.svg, icon-maskable.svg
+  manifest.webmanifest
+  icon.svg, icon-maskable.svg            원본 아이콘
+  icon-192.png, icon-512.png,
+  icon-maskable-512.png                  안드로이드 설치용
+  apple-touch-icon.png                   iOS 홈 화면용(iOS는 PNG만 인식)
 ```
+
+아이콘을 바꿀 때는 `icon.svg`를 고친 뒤 PNG를 다시 만들어야 한다.
+
+`.github/workflows/gym-pages.yml` — `main`의 `public/gym/`이 바뀌면 Pages로 자동 배포한다.
 
 운동표를 바꾸려면 `program.js`의 `WEEKS`만 수정하면 된다. 동작을 추가할 때는
 `exercises.js`의 `EXERCISES`에 항목을 넣고 `pattern`으로 자세 그림 패턴을 지정한다.

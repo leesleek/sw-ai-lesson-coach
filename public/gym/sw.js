@@ -1,5 +1,5 @@
 // 서비스 워커 — 앱 파일을 캐시해 지하 헬스장처럼 신호가 약한 곳에서도 동작하게 한다.
-const CACHE = 'gym4w-v1';
+const CACHE = 'gym4w-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,10 @@ const ASSETS = [
   './manifest.webmanifest',
   './icon.svg',
   './icon-maskable.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

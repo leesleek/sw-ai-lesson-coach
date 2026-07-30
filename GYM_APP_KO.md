@@ -21,7 +21,12 @@
 1. GitHub 저장소 → **Settings → Pages**
 2. **Source: `Deploy from a branch`**
 3. **Branch: `gh-pages`**, 폴더 **`/ (root)`** → **Save**
-4. 1~2분 뒤 주소: **`https://leesleek.github.io/sw-ai-lesson-coach/`**
+4. 1~2분 뒤 주소: **`https://leesleek.github.io/PT-lesson-coach/`**
+
+저장소 이름을 바꾸면 이 주소도 함께 바뀐다(`https://leesleek.github.io/<저장소 이름>/`).
+앱 파일은 모두 상대 경로를 쓰고 서비스 워커도 등록 범위를 기준으로 동작하므로, 이름이 바뀌어도
+코드는 고칠 것이 없다. 다만 **이전 주소로 홈 화면에 추가해 두었다면 삭제하고 새 주소로 다시 추가**한다.
+운동 기록은 경로가 아니라 도메인(`leesleek.github.io`) 단위로 저장되므로 그대로 남는다.
 
 `main` 병합이 필요 없고, Pages가 실제로 서비스하는 구조로 오프라인 실행까지 확인했다.
 

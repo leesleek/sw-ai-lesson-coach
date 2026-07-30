@@ -27,11 +27,11 @@ self.addEventListener('activate', (event) => {
 });
 
 // 앱 파일은 캐시 우선(네트워크로 조용히 갱신), 그 외 요청은 네트워크 우선.
+// 경로를 고정하지 않고 등록 범위(scope)로 판단하므로 어떤 하위 경로에 올려도 그대로 동작한다.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin || !url.pathname.startsWith('/gym/')) return;
+  if (!request.url.startsWith(self.registration.scope)) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {

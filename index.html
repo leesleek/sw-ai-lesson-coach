@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1420" />
+  <meta name="description" content="헬스클럽 4주 운동 코스를 음성 안내로 그대로 따라 할 수 있는 앱" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="4주 헬스" />
+  <title>4주 헬스 코치</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar-title">
+      <strong>4주 헬스 코치</strong>
+      <span id="appbar-sub">1주차 · 월</span>
+    </div>
+    <div class="appbar-actions">
+      <button id="mute-toggle" class="icon-btn" type="button" aria-pressed="false" title="음성 안내 켜기/끄기">🔊</button>
+      <button id="theme-toggle" class="icon-btn" type="button" title="화면 테마">🌗</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── 오늘 ─────────────────────────────────────────────── -->
+    <section id="screen-today" class="screen" data-screen="today">
+      <article class="card session-card">
+        <div class="row-between">
+          <span id="today-chip" class="chip">1주차</span>
+          <button id="pick-session" class="link-btn" type="button">다른 날 선택</button>
+        </div>
+        <h2 id="today-name">1주차 월 · 전신 A</h2>
+        <p id="today-summary" class="muted"></p>
+        <ul class="meta-row">
+          <li><span id="today-count">7</span>개 동작</li>
+          <li>약 <span id="today-minutes">45</span>분</li>
+          <li id="today-status">아직 안 함</li>
+        </ul>
+        <button id="start-workout" class="primary big" type="button">운동 시작</button>
+        <p class="hint">이어폰을 끼고 시작하면 음성으로 순서·세트·휴식을 안내합니다.</p>
+      </article>
+
+      <article class="card">
+        <h3>이번 주 지침</h3>
+        <ul id="week-goals" class="check-list"></ul>
+        <div id="week-checks-wrap" hidden>
+          <h4>※ 운동 동작 자체 점검</h4>
+          <ul id="week-checks" class="check-list"></ul>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="row-between">
+          <h3>오늘 순서</h3>
+          <button id="toggle-edit" class="link-btn" type="button">편집</button>
+        </div>
+        <ol id="today-items" class="item-list"></ol>
+        <p class="hint" id="edit-hint" hidden>기구가 없으면 <b>대체</b>, 오늘 빼려면 <b>제외</b>를 누르세요.</p>
+      </article>
+
+      <article class="card">
+        <h3>물 · 단백질</h3>
+        <div class="tracker">
+          <div class="tracker-row">
+            <span class="tracker-label">💧 물</span>
+            <button class="step-btn" data-track="water" data-delta="-1" type="button">−</button>
+            <strong id="water-count">0</strong>
+            <span class="muted">/ <span id="water-goal">8</span>컵</span>
+            <button class="step-btn" data-track="water" data-delta="1" type="button">+</button>
+          </div>
+          <div class="bar"><span id="water-bar"></span></div>
+          <div class="tracker-row">
+            <span class="tracker-label">🍗 단백질</span>
+            <button class="step-btn" data-track="protein" data-delta="-10" type="button">−</button>
+            <strong id="protein-count">0</strong>
+            <span class="muted">/ <span id="protein-goal">100</span>g</span>
+            <button class="step-btn" data-track="protein" data-delta="10" type="button">+</button>
+          </div>
+          <div class="bar"><span id="protein-bar"></span></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ── 자세 ─────────────────────────────────────────────── -->
+    <section id="screen-guide" class="screen" data-screen="guide" hidden>
+      <div class="card">
+        <h3>자세 가이드</h3>
+        <p class="muted">동작을 누르면 움직이는 그림, 핵심 포인트, 흔한 실수, 영상 링크를 볼 수 있습니다.</p>
+        <input id="guide-search" class="text-input" type="search" placeholder="동작 검색 (예: 스쿼트, 등, 어깨)" />
+      </div>
+      <div id="guide-grid" class="guide-grid"></div>
+    </section>
+
+    <!-- ── 기록 ─────────────────────────────────────────────── -->
+    <section id="screen-stats" class="screen" data-screen="stats" hidden>
+      <div class="tile-grid">
+        <div class="tile"><span id="stat-done">0</span><small>완료 세션 / 20</small></div>
+        <div class="tile"><span id="stat-streak">0</span><small>연속 운동일</small></div>
+        <div class="tile"><span id="stat-volume">0</span><small>총 볼륨 (kg)</small></div>
+        <div class="tile"><span id="stat-time">0</span><small>총 운동 시간(분)</small></div>
+      </div>
+
+      <article class="card">
+        <h3>4주 진행표</h3>
+        <div id="calendar" class="calendar"></div>
+        <p class="hint">완료한 세션은 색이 채워집니다. 칸을 누르면 그 세션으로 이동합니다.</p>
+      </article>
+
+      <article class="card">
+        <h3>주차별 볼륨</h3>
+        <div id="volume-chart" class="volume-chart"></div>
+      </article>
+
+      <article class="card">
+        <h3>동작별 최고 무게</h3>
+        <table class="records"><tbody id="record-rows"></tbody></table>
+      </article>
+
+      <article class="card">
+        <h3>백업 · 관리</h3>
+        <div class="btn-row">
+          <button id="export-data" class="ghost" type="button">기록 내보내기</button>
+          <button id="import-data" class="ghost" type="button">기록 가져오기</button>
+          <button id="export-ics" class="ghost" type="button">일정(.ics) 내보내기</button>
+          <button id="reset-data" class="danger" type="button">전체 초기화</button>
+        </div>
+        <input id="import-file" type="file" accept="application/json" hidden />
+      </article>
+    </section>
+
+    <!-- ── 설정 ─────────────────────────────────────────────── -->
+    <section id="screen-settings" class="screen" data-screen="settings" hidden>
+      <div id="settings-body"></div>
+      <p class="hint">
+        음성이 나오지 않으면 기기 볼륨과 무음 모드를 확인하세요. iPhone은 화면이 꺼지면 음성이 멈추므로
+        <b>화면 항상 켜기</b>를 켜 두는 것이 좋습니다.
+      </p>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-goto="today" type="button"><span>📋</span>오늘</button>
+    <button class="tab" data-goto="guide" type="button"><span>🧍</span>자세</button>
+    <button class="tab" data-goto="stats" type="button"><span>📈</span>기록</button>
+    <button class="tab" data-goto="settings" type="button"><span>⚙️</span>설정</button>
+  </nav>
+
+  <!-- ── 운동 진행 화면 ────────────────────────────────────── -->
+  <div id="runner" class="runner" hidden>
+    <div class="runner-top">
+      <button id="runner-close" class="icon-btn" type="button" title="닫기">✕</button>
+      <div class="runner-progress"><span id="runner-progress-fill"></span></div>
+      <span id="runner-step" class="runner-step">1 / 20</span>
+    </div>
+
+    <div class="runner-body">
+      <span id="phase-label" class="phase-label">준비</span>
+      <h2 id="runner-title">스쿼트</h2>
+      <p id="runner-spec" class="runner-spec"></p>
+
+      <div class="runner-figure" id="runner-figure"></div>
+
+      <div class="runner-clock">
+        <div id="runner-value" class="runner-value">00:60</div>
+        <div id="runner-sub" class="runner-sub"></div>
+      </div>
+
+      <div id="set-dots" class="set-dots"></div>
+
+      <div id="log-box" class="log-box" hidden>
+        <div class="log-field">
+          <label for="log-weight">무게 (<span class="unit-label">kg</span>)</label>
+          <div class="stepper">
+            <button class="step-btn" data-log="weight" data-delta="-2.5" type="button">−</button>
+            <input id="log-weight" class="num-input" type="number" inputmode="decimal" step="0.5" min="0" value="0" />
+            <button class="step-btn" data-log="weight" data-delta="2.5" type="button">+</button>
+          </div>
+        </div>
+        <div class="log-field">
+          <label for="log-reps">반복</label>
+          <div class="stepper">
+            <button class="step-btn" data-log="reps" data-delta="-1" type="button">−</button>
+            <input id="log-reps" class="num-input" type="number" inputmode="numeric" step="1" min="0" value="10" />
+            <button class="step-btn" data-log="reps" data-delta="1" type="button">+</button>
+          </div>
+        </div>
+        <p id="log-hint" class="log-hint"></p>
+      </div>
+
+      <p id="runner-cue" class="runner-cue"></p>
+    </div>
+
+    <div class="runner-controls">
+      <div class="btn-row">
+        <button id="ctl-prev" class="ghost" type="button">◀ 이전</button>
+        <button id="ctl-minus" class="ghost" type="button">−15초</button>
+        <button id="ctl-plus" class="ghost" type="button">+15초</button>
+        <button id="ctl-guide" class="ghost" type="button">자세 보기</button>
+      </div>
+      <div class="btn-row main-row">
+        <button id="ctl-pause" class="secondary" type="button">일시정지</button>
+        <button id="ctl-next" class="primary" type="button">세트 완료</button>
+      </div>
+      <button id="ctl-skip" class="link-btn" type="button">이 동작 건너뛰기</button>
+      <p id="runner-next" class="runner-next"></p>
+    </div>
+  </div>
+
+  <!-- ── 바텀 시트 · 토스트 ────────────────────────────────── -->
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-backdrop" data-close-sheet></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true">
+      <div class="sheet-handle" data-close-sheet></div>
+      <button class="sheet-close" data-close-sheet type="button" aria-label="닫기">✕</button>
+      <div id="sheet-body"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

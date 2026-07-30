@@ -13,31 +13,27 @@
 앱스토어·플레이스토어에 올리는 네이티브 앱이 아니라 **PWA**다. 주소만 있으면 설치되고,
 한 번 열어 두면 서비스 워커가 파일을 캐시해 인터넷 없이도 실행된다.
 
-### 1단계 — GitHub Pages로 배포하기
+### 1단계 — GitHub Pages 켜기 (한 번만)
 
-서버가 필요 없고, 잠들지 않으며, 무료다. 이 저장소는 공개 저장소이므로 바로 켤 수 있다.
-`.github/workflows/gym-pages.yml`이 `public/gym` 폴더만 Pages로 올리도록 준비되어 있다
-(수업 설계 코치는 서버가 필요하므로 Pages에 올리지 않는다).
+서버가 필요 없고, 잠들지 않으며, 무료다. `gh-pages` 브랜치에 앱 파일이 루트로 올라가 있다
+(`public/gym`의 내용만 담은 배포 전용 브랜치이며, 수업 설계 코치는 서버가 필요하므로 넣지 않았다).
 
-1. 워크플로가 담긴 브랜치를 `main`에 병합한다.
-   Pages 배포는 기본 브랜치에서만 실행되므로 이 단계가 필요하다.
-2. GitHub 저장소 → **Settings → Pages** → **Source: `GitHub Actions`** 선택
-   (`Deploy from a branch`가 아니다. 한 번만 설정하면 된다.)
-3. **Actions** 탭에서 `Deploy gym app to GitHub Pages`가 초록색으로 끝나는지 확인한다.
-   자동으로 실행되지 않으면 워크플로 화면에서 `Run workflow`를 누른다.
-4. 완성된 주소: **`https://leesleek.github.io/sw-ai-lesson-coach/`**
+1. GitHub 저장소 → **Settings → Pages**
+2. **Source: `Deploy from a branch`**
+3. **Branch: `gh-pages`**, 폴더 **`/ (root)`** → **Save**
+4. 1~2분 뒤 주소: **`https://leesleek.github.io/sw-ai-lesson-coach/`**
 
-이후 `public/gym/` 안의 파일을 고쳐 `main`에 올리면 자동으로 다시 배포된다.
-Pages가 실제로 서비스하는 구조(`/sw-ai-lesson-coach/` 하위)로 오프라인 실행까지 확인했다.
+`main` 병합이 필요 없고, Pages가 실제로 서비스하는 구조로 오프라인 실행까지 확인했다.
 
-> 병합하기 전에 먼저 휴대폰에서 써 보고 싶다면, **Settings → Pages**에서
-> `Deploy from a branch` → 브랜치 `claude/4week-gym-guide-app-2jswbt` / `/ (root)`로 두면
-> `https://leesleek.github.io/sw-ai-lesson-coach/public/gym/`에서 임시로 동작한다.
-> 다만 주소가 길고 작업 브랜치에 묶이므로, 확인 후에는 위 방식으로 바꾸는 것이 좋다.
+**앱을 수정한 뒤 다시 배포할 때** — `public/gym/`을 고쳐 커밋한 다음 한 줄만 실행한다.
 
-> 참고 — Render 서비스에도 함께 올라간다. `main`에 병합하면 `autoDeploy: true` 설정 때문에
-> Render가 다시 배포되고 `https://<Render 주소>/gym/`으로도 열린다(정적 파일이라 로그인과 무관).
-> 다만 무료 플랜은 15분쯤 접속이 없으면 잠들어 첫 접속이 40~60초 걸리므로, Pages 주소를 쓰는 편이 낫다.
+```bash
+git subtree push --prefix public/gym origin gh-pages
+```
+
+> 참고 — 나중에 이 브랜치를 `main`에 병합하면 `render.yaml`의 `autoDeploy: true` 때문에
+> Render에도 배포되어 `https://<Render 주소>/gym/`으로도 열린다(정적 파일이라 로그인과 무관).
+> 다만 무료 플랜은 15분쯤 접속이 없으면 잠들어 첫 접속이 40~60초 걸린다. Pages 주소를 쓰는 편이 낫다.
 
 ### 2단계 — 홈 화면에 추가
 
@@ -122,9 +118,10 @@ public/gym/
   apple-touch-icon.png                   iOS 홈 화면용(iOS는 PNG만 인식)
 ```
 
-아이콘을 바꿀 때는 `icon.svg`를 고친 뒤 PNG를 다시 만들어야 한다.
+아이콘을 바꿀 때는 `icon.svg`를 고친 뒤 같은 그림으로 PNG들을 다시 만들어야 한다.
 
-`.github/workflows/gym-pages.yml` — `main`의 `public/gym/`이 바뀌면 Pages로 자동 배포한다.
+배포 브랜치 `gh-pages`는 이 폴더의 내용만 루트에 담은 사본이므로 직접 편집하지 않는다.
+항상 `public/gym/`을 고치고 `git subtree push`로 내보낸다.
 
 운동표를 바꾸려면 `program.js`의 `WEEKS`만 수정하면 된다. 동작을 추가할 때는
 `exercises.js`의 `EXERCISES`에 항목을 넣고 `pattern`으로 자세 그림 패턴을 지정한다.
